@@ -90,7 +90,11 @@ PY
   exit 0
 fi
 
-[[ "$code" == "200" ]] || { echo "$entrypoint" >&2; die "failed to read redirect entrypoint ($code)"; }
+if [[ "$code" != "200" ]]; then
+  echo "$entrypoint" >&2
+  echo "Cloudflare Single Redirects unavailable (${code}); Traefik 301s www → apex on origin" >&2
+  exit 0
+fi
 
 merged="$(ENTRYPOINT="$entrypoint" RULE_JSON="$rule_payload" RULE_REF="$RULE_REF" python3 - <<'PY'
 import json, os
