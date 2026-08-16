@@ -46,8 +46,8 @@ services:
       - traefik.http.services.tablio-web.loadbalancer.server.port=3000
       # www is not a content host. 301 to the apex if a request reaches origin
       # (Cloudflare Single Redirects need a token with Transform Rules).
-      - traefik.http.middlewares.tablio-www-to-apex.redirectregex.regex=^https?://www\\.tablio\\.hr/(.*)
-      - traefik.http.middlewares.tablio-www-to-apex.redirectregex.replacement=https://tablio.hr/$${1}
+      - traefik.http.middlewares.tablio-www-to-apex.redirectregex.regex=^https?://www[.]tablio[.]hr(.*)$
+      - traefik.http.middlewares.tablio-www-to-apex.redirectregex.replacement=https://tablio.hr$${1}
       - traefik.http.middlewares.tablio-www-to-apex.redirectregex.permanent=true
       - traefik.http.routers.tablio-web-www.rule=Host(`www.tablio.hr`)
       - traefik.http.routers.tablio-web-www.entrypoints=websecure
