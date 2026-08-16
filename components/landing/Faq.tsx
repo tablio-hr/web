@@ -1,22 +1,11 @@
+import { JsonLd } from "@/components/seo/JsonLd";
 import { FAQ } from "@/content/landing";
+import { faqPageJsonLd } from "@/lib/json-ld";
 
 export function Faq() {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: FAQ.items.map((item) => ({
-      "@type": "Question",
-      name: item.q,
-      acceptedAnswer: { "@type": "Answer", text: item.a },
-    })),
-  };
-
   return (
     <section id={FAQ.id} className="section-anchor bg-paper">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={faqPageJsonLd()} />
       <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:py-20">
         <h2 className="text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">
           {FAQ.title}

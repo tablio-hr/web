@@ -1,0 +1,52 @@
+# Marketing surface only. Traefik must not serve www — Cloudflare 301s www → apex.
+services:
+  web:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api-stage.tablio.hr}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://stage.tablio.hr}
+    image: tablio-web:latest
+    container_name: tablio_web
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      TABLIO_WEB_HOST: ${TABLIO_WEB_HOST:-stage.tablio.hr}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api-stage.tablio.hr}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://stage.tablio.hr}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      proxy: {}
+      hetzner_net: {}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.tablio-web.rule=Host(`${TABLIO_WEB_HOST}`)
+      - traefik.http.routers.tablio-web.entrypoints=websecure
+      - traefik.http.routers.tablio-web.tls=true
+      - traefik.http.routers.tablio-web.tls.certresolver=cloudflare
+      - traefik.http.routers.tablio-web.service=tablio-web
+      - traefik.http.routers.tablio-web.priority=100
+      - traefik.http.routers.tablio-web-http.rule=Host(`${TABLIO_WEB_HOST}`)
+      - traefik.http.routers.tablio-web-http.entrypoints=web
+      - traefik.http.routers.tablio-web-http.service=tablio-web
+      - traefik.http.routers.tablio-web-http.priority=100
+      - traefik.http.services.tablio-web.loadbalancer.server.port=3000
+
+networks:
+  proxy:
+    external: true
+  hetzner_net:
+    external: true

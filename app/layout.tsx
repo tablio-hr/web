@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import type { ReactNode } from "react";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { organizationJsonLd, softwareApplicationJsonLd } from "@/lib/json-ld";
+import { rootMetadata } from "@/lib/metadata";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -9,10 +12,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
 });
 
-export const metadata: Metadata = {
-  title: "Tablio",
-  description: "Povezana platforma za hrvatsko ugostiteljstvo.",
-};
+export const metadata: Metadata = rootMetadata();
 
 export default function RootLayout({
   children,
@@ -21,7 +21,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="hr" className={plusJakartaSans.variable}>
-      <body className={`${plusJakartaSans.className} antialiased`}>{children}</body>
+      <body className={`${plusJakartaSans.className} antialiased`}>
+        <JsonLd data={organizationJsonLd()} />
+        <JsonLd data={softwareApplicationJsonLd()} />
+        {children}
+      </body>
     </html>
   );
 }

@@ -12,6 +12,8 @@ Feature work lands on `develop` (WSL stage). Production is `main` on dedicated-h
 
 The form posts to `POST /api/v1/early-access` on `api-stage.tablio.hr` / `api.tablio.hr`.
 
+This repo has its own DNS allowlist (`scripts/lib/allowlist.sh`): `stage.tablio.hr` / `tablio.hr`. It does not edit the API allowlist.
+
 ## Stack
 
 App Router, TypeScript, Tailwind CSS, `output: "standalone"`. Croatian only — no i18n.
@@ -31,12 +33,26 @@ npm run lint
 npm run typecheck
 npm run check:legal
 npm run check:landing
+npm run check:site
 npm run build
 ```
 
 `next build` writes a standalone server under `.next/standalone` for the Docker image.
 
+`GET /health` is liveness. Stage ships `noindex, nofollow`. Production canonical and sitemap URLs are `https://tablio.hr` only. JSON-LD describes `Organization`, `SoftwareApplication`, and `FAQPage`. `Organization.email` is `info@tablio.hr`.
+
 Do not commit `.env` or tokens.
+
+## Docker
+
+Compose matches the API Traefik pattern (`web` + `websecure`, `TABLIO_WEB_HOST`). There is no `www` router.
+
+```bash
+# WSL stage, branch develop
+./scripts/deploy-stage.sh
+```
+
+Production DNS upserts the apex A record and a proxied `www` CNAME plus a Cloudflare **301** to `https://tablio.hr`. The Single Redirect token permission is required in addition to DNS edit.
 
 ## Legal copy
 
