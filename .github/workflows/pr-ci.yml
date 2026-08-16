@@ -63,12 +63,12 @@ jobs:
           name="tablio-web-ci-${GITHUB_RUN_ID:-local}"
           cleanup() { docker rm -f "${name}" >/dev/null 2>&1 || true; }
           trap cleanup EXIT
-          docker run -d --name "${name}" -p 13000:3000 \
+          docker run -d --name "${name}" \
             -e TABLIO_WEB_HOST=stage.tablio.hr \
             tablio-web:ci
           ok=0
           for _ in $(seq 1 40); do
-            if curl -fsS http://127.0.0.1:13000/health | grep -qx 'ok'; then
+            if docker exec "${name}" node -e "fetch('http://127.0.0.1:3000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
               ok=1
               break
             fi
