@@ -9,8 +9,8 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
-# HEL1 self-hosted runner. Deploys the standing stack in place.
-# Does not start compose from the Actions workspace.
+# HEL1 docker runner has the engine socket, not the host filesystem.
+# Bind-mount the standing stack so compose runs against /opt/stacks/tablio.hr/web.
 
 jobs:
   deploy:
@@ -26,7 +26,6 @@ jobs:
           CLOUDFLARE_TUNNEL_ID: ${{ secrets.CLOUDFLARE_TUNNEL_ID }}
         run: |
           set -euo pipefail
-          test -d /opt/stacks/tablio.hr/web
           test -z "${CF_DNS_TOKEN_STAGE:-}" || { echo "production must not read stage DNS token"; exit 1; }
           test -z "${CLOUDFLARE_TUNNEL_ID:-}" || { echo "production must not read stage tunnel id"; exit 1; }
           test -n "${CF_DNS_TOKEN_PRODUCTION}"
@@ -36,13 +35,21 @@ jobs:
         run: |
           set -euo pipefail
           unset SSH_AUTH_SOCK || true
-          cd /opt/stacks/tablio.hr/web
-          export CF_DNS_TOKEN_PRODUCTION
-          branch="$(git branch --show-current)"
-          [[ "$branch" == "main" ]] || { echo "expected main (got ${branch})"; exit 1; }
-          git fetch origin main
-          git checkout main
-          git pull --ff-only origin main
-          ./scripts/cloudflare_dns_upsert.sh
-          docker compose up -d --build web
-          echo "production deploy finished $(git rev-parse --short HEAD)"
+          docker run --rm \
+            -v /opt/stacks/tablio.hr/web:/opt/stacks/tablio.hr/web \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -e CF_DNS_TOKEN_PRODUCTION \
+            -w /opt/stacks/tablio.hr/web \
+            docker:27-cli \
+            sh -ec '
+              apk add --no-cache git bash python3 curl >/dev/null
+              git config --global --add safe.directory /opt/stacks/tablio.hr/web
+              branch="$(git branch --show-current)"
+              test "$branch" = "main" || { echo "expected main (got ${branch})"; exit 1; }
+              git fetch origin main
+              git checkout main
+              git pull --ff-only origin main
+              ./scripts/cloudflare_dns_upsert.sh
+              docker compose up -d --build web
+              echo "production deploy finished $(git rev-parse --short HEAD)"
+            '
