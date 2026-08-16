@@ -141,6 +141,51 @@ describe("submitEarlyAccess", () => {
     }
   });
 
+  test("forwards turnstile_token and surfaces that field error", async () => {
+    vi.stubEnv("NEXT_PUBLIC_API_URL", "https://api-stage.tablio.hr");
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      submitEarlyAccess({
+        name: "Ana",
+        email: "ana@example.com",
+        interest: "general",
+        turnstile_token: "token-1",
+      }),
+    ).resolves.toEqual({ ok: true });
+    const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
+    expect(JSON.parse(String(requestInit.body))).toMatchObject({
+      turnstile_token: "token-1",
+    });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ turnstile_token: "Potvrda nije uspjela. Pokušajte ponovno." }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+    const failed = await submitEarlyAccess({
+      name: "Ana",
+      email: "ana@example.com",
+      interest: "general",
+      turnstile_token: "bad",
+    });
+    expect(failed.ok).toBe(false);
+    if (!failed.ok) {
+      expect(failed.fieldErrors.turnstile_token).toMatch(/Potvrda/);
+      expect(failed.message).toMatch(/Potvrda/);
+    }
+  });
+
   test("reports a network failure without succeeding", async () => {
     vi.stubEnv("NEXT_PUBLIC_API_URL", "https://api-stage.tablio.hr");
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("failed to fetch")));

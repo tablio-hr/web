@@ -1,21 +1,19 @@
 import { CONTROLLER } from "@/content/legal/controller";
 import { FAQ, HERO, SITE } from "@/content/landing";
-import { OG_IMAGE, PRODUCTION_ORIGIN } from "./site";
-
-const logoUrl = new URL("/brand/tablio-logo.png", PRODUCTION_ORIGIN).toString();
-const imageUrl = new URL(OG_IMAGE.path, PRODUCTION_ORIGIN).toString();
+import { OG_IMAGE, absoluteUrl, siteOrigin } from "./site";
 
 export function organizationJsonLd() {
+  const origin = siteOrigin();
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: CONTROLLER.product,
     legalName: CONTROLLER.legalName,
     alternateName: SITE.name,
-    url: PRODUCTION_ORIGIN,
+    url: origin,
     email: CONTROLLER.email,
-    logo: logoUrl,
-    image: imageUrl,
+    logo: absoluteUrl("/brand/tablio-logo.png"),
+    image: absoluteUrl(OG_IMAGE.path),
     address: {
       "@type": "PostalAddress",
       streetAddress: CONTROLLER.streetAddress,
@@ -27,6 +25,7 @@ export function organizationJsonLd() {
 }
 
 export function softwareApplicationJsonLd() {
+  const origin = siteOrigin();
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -34,19 +33,19 @@ export function softwareApplicationJsonLd() {
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
     description: HERO.lead,
-    url: PRODUCTION_ORIGIN,
-    image: imageUrl,
+    url: origin,
+    image: absoluteUrl(OG_IMAGE.path),
     email: CONTROLLER.email,
     publisher: {
       "@type": "Organization",
       name: CONTROLLER.legalName,
       email: CONTROLLER.email,
-      url: PRODUCTION_ORIGIN,
+      url: origin,
     },
     offers: {
       "@type": "Offer",
       availability: "https://schema.org/PreOrder",
-      url: `${PRODUCTION_ORIGIN}/#pilot`,
+      url: absoluteUrl("/#pilot"),
     },
   };
 }

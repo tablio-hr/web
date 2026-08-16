@@ -1,6 +1,9 @@
 import { networkInterfaces } from "node:os";
 import type { NextConfig } from "next";
 import { securityHeaders } from "./lib/security-headers";
+import { assertProductionTurnstile } from "./lib/turnstile";
+
+assertProductionTurnstile();
 
 function lanDevOrigins(): string[] {
   const hosts = new Set(["127.0.0.1", "localhost"]);

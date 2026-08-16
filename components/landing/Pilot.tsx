@@ -2,8 +2,10 @@ import { Suspense } from "react";
 import { FocusPilotHeading } from "@/components/landing/FocusPilotHeading";
 import { PilotForm } from "@/components/landing/PilotForm";
 import { PILOT } from "@/content/landing";
+import { turnstileSiteKey } from "@/lib/turnstile";
 
 export function Pilot() {
+  const siteKey = turnstileSiteKey();
   return (
     <section id={PILOT.id} className="section-anchor bg-paper-bright">
       <FocusPilotHeading />
@@ -40,7 +42,7 @@ export function Pilot() {
             {PILOT.heading}
           </p>
           <Suspense fallback={<div className="min-h-72 border border-line bg-paper" />}>
-            <PilotForm />
+            <PilotForm turnstileSiteKey={siteKey} />
           </Suspense>
         </div>
       </div>
