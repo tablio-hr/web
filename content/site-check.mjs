@@ -64,19 +64,22 @@ const required = [
   ["PR CI form + a11y", files.prCi.includes("npm run test:e2e")],
   ["stage script WSL only", files.stageDeploy.includes("Never SSHs to dedicated-hel1")],
   ["prod environment", files.prodDeploy.includes("environment: production")],
-  ["prod secret guard host", files.prodDeploy.includes("DEPLOY_HOST")],
+  ["prod self-hosted docker", files.prodDeploy.includes("[self-hosted, linux, x64, tablio, docker]")],
   ["prod secret guard DNS", files.prodDeploy.includes("CF_DNS_TOKEN_PRODUCTION")],
   ["prod rejects stage token", files.prodDeploy.includes("production must not read stage DNS token")],
   ["prod rejects tunnel id", files.prodDeploy.includes("production must not read stage tunnel id")],
   ["prod web path", files.prodDeploy.includes("/opt/stacks/tablio.hr/web")],
+  ["prod www upsert", files.prodDeploy.includes("cloudflare_dns_upsert.sh")],
+  ["compose www redirect", files.compose.includes("tablio-www-to-apex") && files.compose.includes("redirectregex.permanent=true")],
 ];
 
 const forbidden = [
-  ["compose serves www", /Host\(`www|www\.tablio\.hr/i.test(files.compose)],
+  ["compose content host is www", /routers\.tablio-web\.rule=Host\(`www/.test(files.compose)],
   ["allowlist serves www", /PRODUCTION_DNS_ALLOWLIST=.*www\.tablio\.hr/.test(files.allowlist)],
   ["PR CI stage runner", /self-hosted,\s*stage|tablio,\s*stage/.test(files.prCi)],
   ["PR CI runs stage deploy", /scripts\/deploy-stage/.test(files.prCi)],
   ["PR CI compose stack", files.prCi.includes("/opt/stacks/tablio.hr")],
+  ["prod ubuntu-latest", files.prodDeploy.includes("ubuntu-latest")],
 ];
 
 const missing = required.filter(([, ok]) => !ok).map(([label]) => label);
