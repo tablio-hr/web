@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "check:legal": "node content/legal/check.mjs"
+    "check:legal": "node content/legal/check.mjs",
+    "check:landing": "node content/landing-check.mjs"
   },
   "engines": {
     "node": ">=20"

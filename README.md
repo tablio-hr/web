@@ -30,6 +30,7 @@ Open [http://localhost:3000](http://localhost:3000).
 npm run lint
 npm run typecheck
 npm run check:legal
+npm run check:landing
 npm run build
 ```
 
