@@ -59,9 +59,9 @@ Production DNS upserts the apex A record and a proxied `www` CNAME plus a Cloudf
 
 ## CI
 
-Promote-PR CI (`.github/workflows/pr-ci.yml`) runs on HEL1 `tablio-docker-runner`: lint, typecheck, contract checks, unit tests, `next build`, Playwright form + a11y smoke (mocked API), Docker build, and a `/health` container smoke.
+CI (`.github/workflows/pr-ci.yml`) runs on HEL1 `tablio-docker-runner` for promote PRs and pushes to `develop`: lint, typecheck, contract checks, unit tests, `next build`, Playwright form + a11y smoke (mocked API), Docker build, and a `/health` container smoke.
 
-There is no GitHub Actions stage job and no `stage` runner label. `develop` never deploys to HEL1.
+There is no GitHub Actions stage job and no `stage` runner label. `develop` never deploys to HEL1. Workflows use `[self-hosted, linux, x64, tablio, docker]`, never `ubuntu-latest`.
 
 ## Release
 
@@ -70,7 +70,7 @@ WSL develop (direct commit) → manual stage deploy → stage smoke
   → Promote to production PR → CI → main → production deploy
 ```
 
-Production deploy (`.github/workflows/deploy-production.yml`) SSHs to dedicated-hel1 with the same secret guards as the API: `DEPLOY_*` and `CF_DNS_TOKEN_PRODUCTION` required; stage DNS token and tunnel id must be absent.
+Production deploy (`.github/workflows/deploy-production.yml`) runs on HEL1 `tablio-docker-runner` and updates `/opt/stacks/tablio.hr/web` in place. It upserts the apex A record and a Cloudflare **301** `www.tablio.hr` → `https://tablio.hr`. Required secret: `CF_DNS_TOKEN_PRODUCTION` on the `production` environment. Stage DNS token and tunnel id must be absent.
 
 ## Legal copy
 

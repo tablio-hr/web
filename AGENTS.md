@@ -14,7 +14,8 @@ Repo: [tablio-hr/web](https://github.com/tablio-hr/web).
 - Promote-PR CI is `.github/workflows/pr-ci.yml` on
   `[self-hosted, linux, x64, tablio, docker]`. It must not run deploy scripts or
   compose against `/opt/stacks/tablio.hr`.
-- Production deploy is `.github/workflows/deploy-production.yml` on `main`.
+- Production deploy is `.github/workflows/deploy-production.yml` on `main`,
+  `runs-on: [self-hosted, linux, x64, tablio, docker]`. Never `ubuntu-latest`.
 - Do not click **New runner**. Do not put a `stage` label on HEL1 runners.
 - Do not commit `.env` or tokens.
 
