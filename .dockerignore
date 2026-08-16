@@ -12,3 +12,10 @@ content/legal/check.mjs
 content/landing-check.mjs
 content/site-check.mjs
 scripts/generate-og.py
+scripts/run-standalone.sh
+e2e
+playwright-report
+test-results
+coverage
+vitest.config.mts
+playwright.config.ts

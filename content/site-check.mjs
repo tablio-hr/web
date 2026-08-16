@@ -23,6 +23,9 @@ const files = {
   sitemap: read("app/sitemap.ts"),
   health: read("app/health/route.ts"),
   faq: read("components/landing/Faq.tsx"),
+  prCi: read(".github/workflows/pr-ci.yml"),
+  prodDeploy: read(".github/workflows/deploy-production.yml"),
+  stageDeploy: read("scripts/deploy-stage.sh"),
 };
 
 const required = [
@@ -53,11 +56,27 @@ const required = [
   ["sitemap production only", files.sitemap.includes("isProductionSite()") && files.sitemap.includes("return []")],
   ["sitemap production URLs", files.sitemap.includes("PRODUCTION_ORIGIN")],
   ["health liveness", files.health.includes('"ok\\n"') || files.health.includes("ok\\n")],
+  ["PR CI pull_request", files.prCi.includes("pull_request:")],
+  ["PR CI docker runner", files.prCi.includes("[self-hosted, linux, x64, tablio, docker]")],
+  ["PR CI lint", files.prCi.includes("npm run lint")],
+  ["PR CI next build", files.prCi.includes("npm run build")],
+  ["PR CI docker build", files.prCi.includes("docker build")],
+  ["PR CI form + a11y", files.prCi.includes("npm run test:e2e")],
+  ["stage script WSL only", files.stageDeploy.includes("Never SSHs to dedicated-hel1")],
+  ["prod environment", files.prodDeploy.includes("environment: production")],
+  ["prod secret guard host", files.prodDeploy.includes("DEPLOY_HOST")],
+  ["prod secret guard DNS", files.prodDeploy.includes("CF_DNS_TOKEN_PRODUCTION")],
+  ["prod rejects stage token", files.prodDeploy.includes("production must not read stage DNS token")],
+  ["prod rejects tunnel id", files.prodDeploy.includes("production must not read stage tunnel id")],
+  ["prod web path", files.prodDeploy.includes("/opt/stacks/tablio.hr/web")],
 ];
 
 const forbidden = [
   ["compose serves www", /Host\(`www|www\.tablio\.hr/i.test(files.compose)],
   ["allowlist serves www", /PRODUCTION_DNS_ALLOWLIST=.*www\.tablio\.hr/.test(files.allowlist)],
+  ["PR CI stage runner", /self-hosted,\s*stage|tablio,\s*stage/.test(files.prCi)],
+  ["PR CI runs stage deploy", /scripts\/deploy-stage/.test(files.prCi)],
+  ["PR CI compose stack", files.prCi.includes("/opt/stacks/tablio.hr")],
 ];
 
 const missing = required.filter(([, ok]) => !ok).map(([label]) => label);

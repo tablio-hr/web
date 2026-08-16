@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "check:legal": "node content/legal/check.mjs",
     "check:landing": "node content/landing-check.mjs",
     "check:site": "node content/site-check.mjs"
@@ -25,9 +28,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.55.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4"
   }
 }

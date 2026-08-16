@@ -34,7 +34,10 @@ npm run typecheck
 npm run check:legal
 npm run check:landing
 npm run check:site
+npm test
 npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
 
 `next build` writes a standalone server under `.next/standalone` for the Docker image.
@@ -48,11 +51,26 @@ Do not commit `.env` or tokens.
 Compose matches the API Traefik pattern (`web` + `websecure`, `TABLIO_WEB_HOST`). There is no `www` router.
 
 ```bash
-# WSL stage, branch develop
+# WSL stage, branch develop — not a GitHub Actions job
 ./scripts/deploy-stage.sh
 ```
 
 Production DNS upserts the apex A record and a proxied `www` CNAME plus a Cloudflare **301** to `https://tablio.hr`. The Single Redirect token permission is required in addition to DNS edit.
+
+## CI
+
+Promote-PR CI (`.github/workflows/pr-ci.yml`) runs on HEL1 `tablio-docker-runner`: lint, typecheck, contract checks, unit tests, `next build`, Playwright form + a11y smoke (mocked API), Docker build, and a `/health` container smoke.
+
+There is no GitHub Actions stage job and no `stage` runner label. `develop` never deploys to HEL1.
+
+## Release
+
+```text
+WSL develop (direct commit) → manual stage deploy → stage smoke
+  → Promote to production PR → CI → main → production deploy
+```
+
+Production deploy (`.github/workflows/deploy-production.yml`) SSHs to dedicated-hel1 with the same secret guards as the API: `DEPLOY_*` and `CF_DNS_TOKEN_PRODUCTION` required; stage DNS token and tunnel id must be absent.
 
 ## Legal copy
 

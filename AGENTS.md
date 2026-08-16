@@ -9,8 +9,12 @@ Repo: [tablio-hr/web](https://github.com/tablio-hr/web).
   delete `develop` or `main`.
 - Marketing hosts only: stage `stage.tablio.hr`, production `tablio.hr`. Do not
   serve admin or API on these hosts.
-- Stage deploy is manual on WSL. CI, if present, uses HEL1 runners:
-  `[self-hosted, linux, x64, tablio, docker]` or `tablio, default`.
+- Stage deploy is manual on WSL (`./scripts/deploy-stage.sh`). No GitHub Actions
+  stage job and no `stage` runner label.
+- Promote-PR CI is `.github/workflows/pr-ci.yml` on
+  `[self-hosted, linux, x64, tablio, docker]`. It must not run deploy scripts or
+  compose against `/opt/stacks/tablio.hr`.
+- Production deploy is `.github/workflows/deploy-production.yml` on `main`.
 - Do not click **New runner**. Do not put a `stage` label on HEL1 runners.
 - Do not commit `.env` or tokens.
 
