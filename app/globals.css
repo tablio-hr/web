@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --color-navy: #002050;
+  --color-navy-deep: #001536;
+  --color-orange: #f86000;
+  --color-orange-dark: #b84700;
+  --color-paper: #f7f3ec;
+  --color-paper-bright: #fffdf8;
+  --color-ink: #001536;
+  --color-muted: #3d4d66;
+  --color-line: #d8d0c4;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  background: var(--color-paper-bright);
+  color: var(--color-ink);
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-orange);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 80;
+  border-radius: 0.25rem;
+  background: var(--color-orange);
+  color: var(--color-navy);
+  padding: 0.5rem 0.85rem;
+  font-weight: 700;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.section-anchor {
+  scroll-margin-top: 5.5rem;
+}
+
+.hp-field {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.flow-step {
+  animation: flow-in 700ms ease both;
+}
+
+.flow-step:nth-child(2) {
+  animation-delay: 80ms;
+}
+.flow-step:nth-child(3) {
+  animation-delay: 160ms;
+}
+.flow-step:nth-child(4) {
+  animation-delay: 240ms;
+}
+.flow-step:nth-child(5) {
+  animation-delay: 320ms;
+}
+
+@keyframes flow-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

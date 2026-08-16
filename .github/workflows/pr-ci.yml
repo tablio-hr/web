@@ -1,0 +1,77 @@
+name: PR CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: pr-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Promote-PR gate on HEL1. Does not deploy and does not start compose.
+# Stage remains a manual WSL script.
+
+jobs:
+  web:
+    name: PR CI / web
+    runs-on: [self-hosted, linux, x64, tablio, docker]
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_API_URL: https://api-stage.tablio.hr
+      NEXT_PUBLIC_SITE_URL: https://stage.tablio.hr
+      NEXT_TELEMETRY_DISABLED: "1"
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Contract checks
+        run: |
+          set -euo pipefail
+          npm run check:legal
+          npm run check:landing
+          npm run check:site
+      - name: Unit tests
+        run: npm test
+      - name: Next.js build
+        run: npm run build
+      - name: Install Playwright Chromium
+        run: |
+          set -euo pipefail
+          npx playwright install --with-deps chromium || npx playwright install chromium
+      - name: Form + a11y smoke
+        run: npm run test:e2e
+      - name: Docker build
+        run: |
+          set -euo pipefail
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL}" \
+            --build-arg NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL}" \
+            -t tablio-web:ci \
+            .
+      - name: Docker health smoke
+        run: |
+          set -euo pipefail
+          name="tablio-web-ci-${GITHUB_RUN_ID:-local}"
+          cleanup() { docker rm -f "${name}" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          docker run -d --name "${name}" \
+            -e TABLIO_WEB_HOST=stage.tablio.hr \
+            tablio-web:ci
+          ok=0
+          for _ in $(seq 1 40); do
+            if docker exec "${name}" node -e "fetch('http://127.0.0.1:3000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+              ok=1
+              break
+            fi
+            sleep 1
+          done
+          test "${ok}" = "1"
