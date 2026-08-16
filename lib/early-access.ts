@@ -124,6 +124,7 @@ export async function submitEarlyAccess(
     message:
       fieldErrors.detail ??
       fieldErrors.non_field_errors ??
+      fieldErrors.turnstile_token ??
       "Prijava nije spremljena. Provjerite podatke i pokušajte ponovno.",
   };
 }

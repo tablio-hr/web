@@ -6,6 +6,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api-stage.tablio.hr}
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://stage.tablio.hr}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
     image: tablio-web:latest
     container_name: tablio_web
     restart: unless-stopped
@@ -15,6 +16,7 @@ services:
       TABLIO_WEB_HOST: ${TABLIO_WEB_HOST:-stage.tablio.hr}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api-stage.tablio.hr}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://stage.tablio.hr}
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
     healthcheck:
       test:
         [

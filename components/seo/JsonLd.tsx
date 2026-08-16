@@ -1,11 +1,7 @@
-import { headers } from "next/headers";
-
-export async function JsonLd({ data }: { data: object }) {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+export function JsonLd({ data }: { data: object }) {
   return (
     <script
       type="application/ld+json"
-      nonce={nonce}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );

@@ -5,6 +5,7 @@ const baseURL = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: "./e2e",
+  testIgnore: process.env.E2E_TURNSTILE ? [] : /turnstile\.spec\.ts/,
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
@@ -18,7 +19,7 @@ export default defineConfig({
   webServer: {
     command: `PORT=${port} HOSTNAME=127.0.0.1 ./scripts/run-standalone.sh`,
     url: `${baseURL}/health`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !process.env.CI && !process.env.E2E_TURNSTILE,
     timeout: 120_000,
   },
 });

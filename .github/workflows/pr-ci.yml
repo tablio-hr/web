@@ -51,6 +51,15 @@ jobs:
           npx playwright install --with-deps chromium || npx playwright install chromium
       - name: Form + a11y smoke
         run: npm run test:e2e
+      - name: Turnstile CSP smoke
+        env:
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+          E2E_TURNSTILE: "1"
+        run: |
+          set -euo pipefail
+          rm -rf .next
+          npm run build
+          npx playwright test e2e/turnstile.spec.ts
       - name: Docker build
         run: |
           set -euo pipefail

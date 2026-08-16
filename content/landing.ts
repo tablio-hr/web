@@ -202,6 +202,7 @@ export const PILOT = {
   errors: {
     name: "Unesite ime.",
     email: "Unesite valjanu e-mail adresu.",
+    turnstile: "Potvrda nije uspjela. Pokušajte ponovno.",
     generic: "Prijava nije spremljena. Provjerite podatke i pokušajte ponovno.",
     network: "Veza s poslužiteljem nije uspjela. Pokušajte ponovno.",
     unavailable: "Prijava trenutačno nije dostupna. Pokušajte kasnije ili pišite na info@tablio.hr.",

@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { TurnstileWidget, type TurnstileWidgetHandle } from "@/components/landing/TurnstileWidget";
 import { InlineSpans } from "@/components/ui/InlineSpans";
 import { FORM_PRIVACY_NOTICE } from "@/content/legal/form-notice";
 import { PILOT } from "@/content/landing";
@@ -12,7 +13,11 @@ import {
   type Interest,
 } from "@/lib/early-access";
 
-export function PilotForm() {
+type PilotFormProps = {
+  turnstileSiteKey?: string;
+};
+
+export function PilotForm({ turnstileSiteKey = "" }: PilotFormProps) {
   const searchParams = useSearchParams();
   const interest: Interest = normalizeInterest(searchParams.get("interest"));
   const formRef = useRef<HTMLFormElement>(null);
@@ -20,12 +25,14 @@ export function PilotForm() {
   const emailRef = useRef<HTMLInputElement>(null);
   const successRef = useRef<HTMLHeadingElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
+  const turnstileRef = useRef<TurnstileWidgetHandle>(null);
   const nameId = useId();
   const emailId = useId();
   const errorId = useId();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ name?: string; email?: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -37,13 +44,31 @@ export function PilotForm() {
     }
   }, [success]);
 
+  function clearTurnstileToken() {
+    setTurnstileToken("");
+  }
+
+  function refreshTurnstile() {
+    turnstileRef.current?.reset();
+    clearTurnstileToken();
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (pending) {
+      return;
+    }
     setFormError(null);
     const nextErrors = validateEarlyAccess({ name, email });
     setFieldErrors(nextErrors);
     if (nextErrors.name || nextErrors.email) {
       (nextErrors.name ? nameRef : emailRef).current?.focus();
+      return;
+    }
+
+    if (turnstileSiteKey && !turnstileToken) {
+      setFormError(PILOT.errors.turnstile);
+      errorRef.current?.focus();
       return;
     }
 
@@ -53,14 +78,17 @@ export function PilotForm() {
       email: email.trim(),
       interest,
       website,
+      ...(turnstileToken ? { turnstile_token: turnstileToken } : {}),
     });
     setPending(false);
 
     if (result.ok) {
+      setTurnstileToken("");
       setSuccess(true);
       return;
     }
 
+    refreshTurnstile();
     const nextField = {
       name: result.fieldErrors.name,
       email: result.fieldErrors.email,
@@ -152,6 +180,18 @@ export function PilotForm() {
             </p>
           ) : null}
         </div>
+        {turnstileSiteKey ? (
+          <TurnstileWidget
+            ref={turnstileRef}
+            siteKey={turnstileSiteKey}
+            onToken={setTurnstileToken}
+            onExpire={clearTurnstileToken}
+            onError={() => {
+              clearTurnstileToken();
+              setFormError(PILOT.errors.turnstile);
+            }}
+          />
+        ) : null}
         {formError ? (
           <p
             ref={errorRef}

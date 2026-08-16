@@ -37,6 +37,7 @@ test.describe("early-access form", () => {
       email: "ana@example.com",
       interest: "general",
     });
+    expect(JSON.parse(seen[0].postData() ?? "{}")).not.toHaveProperty("turnstile_token");
   });
 
   test("client validation does not call the API", async ({ page }) => {
