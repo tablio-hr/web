@@ -1,14 +1,11 @@
-import { headers } from "next/headers";
-import Script from "next/script";
 import { Suspense } from "react";
 import { FocusPilotHeading } from "@/components/landing/FocusPilotHeading";
 import { PilotForm } from "@/components/landing/PilotForm";
 import { PILOT } from "@/content/landing";
-import { TURNSTILE_SCRIPT_SRC, turnstileSiteKey } from "@/lib/turnstile";
+import { turnstileSiteKey } from "@/lib/turnstile";
 
-export async function Pilot() {
+export function Pilot() {
   const siteKey = turnstileSiteKey();
-  const turnstileNonce = siteKey ? ((await headers()).get("x-nonce") ?? undefined) : undefined;
   return (
     <section id={PILOT.id} className="section-anchor bg-paper-bright">
       <FocusPilotHeading />
@@ -45,13 +42,6 @@ export async function Pilot() {
             {PILOT.heading}
           </p>
           <Suspense fallback={<div className="min-h-72 border border-line bg-paper" />}>
-            {siteKey ? (
-              <Script
-                src={TURNSTILE_SCRIPT_SRC}
-                strategy="afterInteractive"
-                nonce={turnstileNonce}
-              />
-            ) : null}
             <PilotForm turnstileSiteKey={siteKey} />
           </Suspense>
         </div>

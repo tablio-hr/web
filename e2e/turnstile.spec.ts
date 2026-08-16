@@ -7,7 +7,7 @@ const keyed = Boolean(process.env.E2E_TURNSTILE);
 test.describe("Turnstile widget", () => {
   test.skip(!keyed, "requires a keyed Playwright build (E2E_TURNSTILE=1)");
 
-  test("loads the challenge without CSP blocking the script or iframe", async ({ page }) => {
+  test("loads the challenge without CSP blocking the script or widget", async ({ page }) => {
     const consoleCsp = await collectCspViolations(page);
     const response = await page.goto("/#pilot");
     const nonce = cspNonce(response?.headers()["content-security-policy"]);
@@ -15,12 +15,17 @@ test.describe("Turnstile widget", () => {
 
     const html = await response?.text();
     expect(html).toContain("challenges.cloudflare.com/turnstile/v0/api.js");
-    expect(html).toContain(`nonce="${nonce}"`);
+    expect(html).toMatch(new RegExp(`challenges\\.cloudflare\\.com[^>]{0,200}nonce="${nonce}"`));
 
     await expect(page.getByTestId("turnstile")).toBeAttached();
-    await expect(page.locator("iframe[src*='challenges.cloudflare.com']")).toBeVisible({
+    await expect(page.locator('[name="cf-turnstile-response"]')).toHaveValue(/.+/, {
       timeout: 20_000,
     });
+
+    const cloudflareIframe = page.locator("iframe[src*='challenges.cloudflare.com']");
+    if ((await cloudflareIframe.count()) > 0) {
+      await expect(cloudflareIframe.first()).toBeVisible();
+    }
 
     expect(
       (await pageCspViolations(page)).filter((item) => item.includes("challenges.cloudflare.com")),
@@ -35,10 +40,7 @@ test.describe("Turnstile widget", () => {
     }));
 
     await page.goto("/#pilot");
-    await expect(page.locator("iframe[src*='challenges.cloudflare.com']")).toBeVisible({
-      timeout: 20_000,
-    });
-    await expect(page.locator('textarea[name="cf-turnstile-response"]')).toHaveValue(/.+/, {
+    await expect(page.locator('[name="cf-turnstile-response"]')).toHaveValue(/.+/, {
       timeout: 20_000,
     });
 
